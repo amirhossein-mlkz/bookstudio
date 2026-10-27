@@ -1,0 +1,1 @@
+Place all 9 original Vazirmatn-<Weight>.ttf static font files in this folder. Run python prepare_fonts.py <source-directory> to copy and validate them. Keep the OFL license.

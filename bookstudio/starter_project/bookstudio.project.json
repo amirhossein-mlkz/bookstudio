@@ -1,0 +1,69 @@
+{
+  "application": "bookstudio-lite",
+  "version": 2,
+  "sections": [
+    {
+      "id": "0263a6c9d5e7",
+      "title": "پیشگفتار نویسنده",
+      "role": "preface",
+      "odd_tab_text_1": "بازاریابی صنعتی مقدماتی",
+      "odd_tab_text_2": "پیشگفتار نویسنده",
+      "include_title_page": true
+    },
+    {
+      "id": "74f358d600cd",
+      "title": "مقدمه",
+      "role": "introduction",
+      "odd_tab_text_1": "بازاریابی صنعتی مقدماتی",
+      "odd_tab_text_2": "مقدمه",
+      "include_title_page": true
+    },
+    {
+      "id": "04a4dd6ee0f5",
+      "title": "ماهیت بازاریابی صنعتی و جایگاه آن در زنجیره ارزش تولید",
+      "role": "chapter",
+      "odd_tab_text_1": "بازاریابی صنعتی مقدماتی",
+      "odd_tab_text_2": "ماهیت بازاریابی صنعتی و جایگاه آن در زنجیره ارزش تولید",
+      "include_title_page": true
+    },
+    {
+      "id": "625cf6902ea1",
+      "title": "طبقه‌بندی محصولات صنعتی و استراتژی‌های بازاریابی متناسب",
+      "role": "chapter",
+      "odd_tab_text_1": "بازاریابی صنعتی مقدماتی",
+      "odd_tab_text_2": "طبقه‌بندی محصولات صنعتی و استراتژی‌های بازاریابی متناسب",
+      "include_title_page": true
+    },
+    {
+      "id": "303bde723539",
+      "title": "مدیریت دانش و گزارش‌دهی در صنعت",
+      "role": "chapter",
+      "odd_tab_text_1": "بازاریابی صنعتی مقدماتی",
+      "odd_tab_text_2": "مدیریت دانش و گزارش‌دهی در صنعت",
+      "include_title_page": true
+    }
+  ],
+  "frontmatter": {
+    "dedication_enabled": true,
+    "dedication": "به مهندسان، مدیران و کارآفرینان صنعت ایران؛\n\nبه کسانی که در سایه محدودیت‌ها، تولید را متوقف نکرده‌اند و با خلاقیت و تدبیر، زنجیره ارزش را زنده نگه داشته‌اند.\n\nباشد که هر صفحه‌اش گامی به‌سوی حرفه‌ای‌تر شدن بازاریابی صنعتی باشد.",
+    "imprint_enabled": true,
+    "toc_enabled": true,
+    "toc_include_h1": true,
+    "toc_include_h2": true,
+    "toc_include_h3": false,
+    "toc_title": "فهرست مطالب",
+    "toc_title_color": "#ffffff",
+    "toc_title_bg": "#565a8b",
+    "toc_text_color": "#202852",
+    "toc_rule_color": "#303342",
+    "toc_font_size": 10,
+    "toc_title_size": 17,
+    "dedication_border_color": "#202852",
+    "dedication_label_bg": "#202852",
+    "dedication_font_size": 14,
+    "imprint_header_color": "#cf2833",
+    "isbn": "978-600-000-000-0",
+    "print_run": "۱۰۰۰",
+    "edition": "چاپ اول"
+  }
+}

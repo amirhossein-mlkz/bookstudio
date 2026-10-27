@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Book Studio Lite</title>
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+<header class="toolbar">
+  <div class="brand">
+    <div class="brandmark">BS</div>
+    <div>
+      <strong>Book Studio Lite <small style="display:inline-block;font-size:10px;opacity:.65">v5.11</small></strong>
+      <small>ویرایش و صفحه‌آرایی سریع کتاب‌های علمی و آموزشی</small>
+    </div>
+  </div>
+  <div class="toolbar-right">
+    <div class="toolbar-actions">
+      <div class="tool-group"><button id="newProjectBtn" class="tool-btn secondary" type="button">پروژه جدید</button></div>
+      <div class="tool-group"><button id="openProjectBtn" class="tool-btn secondary" type="button">باز کردن پروژه</button><button id="openFolderBtn" class="tool-btn secondary" type="button">باز کردن پوشه</button></div>
+      <div class="tool-group"><button id="saveBtn" class="tool-btn primary" type="button">ذخیره</button><button id="saveAsBtn" class="tool-btn secondary" type="button">ذخیره به‌عنوان</button></div>
+      <div class="tool-group"><button id="renderBtn" class="tool-btn primary" type="button">پیش‌نمایش</button><a id="pdfBtn" class="tool-btn secondary" href="/api/pdf">دانلود PDF کل کتاب</a></div>
+      <div class="tool-group insert-tool-group">
+        <details class="insert-menu" id="insertMenu">
+          <summary class="tool-btn insert-menu-trigger" aria-label="باز کردن منوی درج عناصر">+ درج عناصر <span aria-hidden="true">▾</span></summary>
+          <div class="insert-menu-panel" role="group" aria-label="درج عناصر کتاب">
+            <button id="breakBtn" type="button">شکست صفحه</button>
+            <button id="chapterBtn" type="button">شروع فصل</button>
+            <button id="blankDecorBtn" type="button">صفحه خالی ویژه</button>
+            <button id="openImageDialog" type="button">افزودن تصویر</button>
+            <button id="footnoteBtn" type="button">افزودن پاورقی (فوتر)</button>
+            <button id="quoteBtn" type="button">افزودن نقل‌قول</button>
+          </div>
+        </details>
+      </div>
+      <div class="tool-group"><button id="promptBtn" class="tool-btn secondary" type="button">راهنمای ساخت MD</button></div>
+    </div>
+    <div class="toolbar-meta">
+      <span id="projectFolderLabel" class="project-folder-label">پروژه هنوز در پوشه‌ای ذخیره نشده</span>
+      <span id="status">آماده</span>
+    </div>
+  </div>
+</header>
+
+<main class="app">
+  <aside class="project-nav" aria-label="ساختار کتاب">
+    <h2>مدیریت کتاب</h2>
+    <div class="project-tabs" role="tablist" aria-label="مدیریت کتاب">
+      <button id="sectionsTab" class="project-tab active" type="button" role="tab" aria-controls="sectionControls" aria-selected="true">فصل‌ها و بخش‌ها</button>
+      <button id="frontTab" class="project-tab" type="button" role="tab" aria-controls="frontControls" aria-selected="false">صفحات اولیه</button>
+      <button id="settingsTab" class="project-tab" type="button" role="tab" aria-controls="templateControls" aria-selected="false">تنظیمات قالب</button>
+    </div>
+    <div id="sectionControls" class="project-tab-panel" role="tabpanel" aria-labelledby="sectionsTab">
+      <p class="hint">فصل‌ها را با کشیدن و رهاکردن مرتب کن. پیشگفتار و مقدمه در ابتدای کتاب قرار می‌گیرند.</p>
+      <div id="sectionList" class="section-list" aria-label="ترتیب بخش‌های کتاب"></div>
+      <div class="project-add"><button type="button" id="addChapterBtn">+ فصل</button><button type="button" class="secondary" id="addPrefaceBtn">+ پیشگفتار</button><button type="button" class="secondary" id="addIntroBtn">+ مقدمه</button></div>
+      <div class="project-add"><button type="button" class="secondary" id="importManyBtn">+ افزودن فایل‌های MD</button><input id="importManyFiles" type="file" accept=".md,text/markdown,text/plain" multiple hidden></div>
+      <hr>
+      <h3>مشخصات بخش انتخاب‌شده</h3>
+      <label>عنوان بخش<input id="sectionTitle" placeholder="عنوان این بخش"></label>
+      <label>نوع بخش<select id="sectionRole"><option value="chapter">فصل شماره‌دار</option><option value="preface">پیشگفتار</option><option value="introduction">مقدمه</option></select></label>
+      <label class="front-check"><input type="checkbox" id="sectionHeadingEnabled"> نمایش خودکار عنوان اصلی (#) در ابتدای متن این بخش</label>
+      <label>متن نمایشی عنوان اصلی (#)<input id="sectionHeadingLabel" maxlength="200" placeholder="پیش‌فرض: عنوان بخش"></label>
+      <p class="hint">در حالت فعال، این متن در مستطیل و مثلث تیتر خودکار نمایش داده می‌شود و اگر خالی باشد از عنوان بخش استفاده می‌شود. در حالت غیرفعال، تنها تیتر خودکار حذف می‌شود و هر عنوان # که خودتان در Markdown بنویسید با همان قالب نمایش داده خواهد شد.</p>
+      <label class="front-check"><input type="checkbox" id="sectionTitlePage"> صفحه اختصاصی عنوان این بخش نمایش داده شود</label>
+      <label>متن کادر بالایی صفحه عنوان<input id="sectionOpenerLabel" maxlength="200" placeholder="پیش‌فرض: فصل / پیشگفتار / مقدمه"></label>
+      <label>متن کادر پایینی صفحه عنوان<input id="sectionOpenerTitle" maxlength="200" placeholder="پیش‌فرض: عنوان بخش"></label>
+      <p class="hint">در صورت غیرفعال کردن، عنوان در ابتدای اولین صفحه متن نمایش داده می‌شود و شماره صفحات و فهرست خودکار به‌روز می‌شوند.</p>
+      <label>متن عمودی ۱ صفحه فرد<input id="sectionOdd1" placeholder="نام کتاب"></label>
+      <label>متن عمودی ۲ صفحه فرد<input id="sectionOdd2" placeholder="عنوان این فصل"></label>
+      <label>متن عمودی ۱ صفحه زوج<input id="sectionEven1" maxlength="200" placeholder="پیش‌فرض: متن ۱ صفحه فرد یا عنوان کتاب"></label>
+      <label>متن عمودی ۲ صفحه زوج<input id="sectionEven2" maxlength="200" placeholder="پیش‌فرض: متن ۲ صفحه فرد یا عنوان بخش"></label>
+      <div class="project-add"><button type="button" class="secondary" id="removeSectionBtn">حذف بخش</button><a class="tool-btn secondary section-export disabled" id="sectionPdfBtn" href="#">PDF این بخش</a></div>
+    </div>
+    <div id="frontControls" class="project-tab-panel" role="tabpanel" aria-labelledby="frontTab" hidden>
+      <p class="hint">این صفحات پیش از تمام فایل‌های Markdown قرار می‌گیرند. نویسنده و تاریخ از تنظیمات عمومی خوانده می‌شوند.</p>
+      <details open><summary>شناسنامه</summary>
+        <label class="front-check"><input type="checkbox" data-front-key="imprint_enabled"> نمایش شناسنامه</label>
+        <label>شابک<input data-front-key="isbn"></label>
+        <label>نوبت چاپ<input data-front-key="edition"></label>
+        <label>شمارگان<input data-front-key="print_run"></label>
+        <label>رنگ نوار عنوان<input type="color" data-front-key="imprint_header_color"></label>
+      </details>
+      <details open><summary>تقدیم به</summary>
+        <label class="front-check"><input type="checkbox" data-front-key="dedication_enabled"> نمایش صفحه تقدیم به</label>
+        <label>متن تقدیم<textarea id="dedicationText" data-front-key="dedication" rows="7" placeholder="متن تقدیم به را اینجا بنویسید"></textarea></label>
+        <div class="two"><label>رنگ قاب<input type="color" data-front-key="dedication_border_color"></label><label>رنگ برچسب<input type="color" data-front-key="dedication_label_bg"></label></div>
+        <label>اندازه متن<input type="number" min="8" max="30" data-front-key="dedication_font_size"></label>
+      </details>
+      <details open><summary>فهرست مطالب</summary>
+        <label class="front-check"><input type="checkbox" data-front-key="toc_enabled"> نمایش فهرست</label>
+        <label>عنوان فهرست<input data-front-key="toc_title"></label>
+        <div class="toc-levels"><label><input type="checkbox" data-front-key="toc_include_h1"> عناوین فصل‌ها</label><label><input type="checkbox" data-front-key="toc_include_h2"> سطح ##</label><label><input type="checkbox" data-front-key="toc_include_h3"> سطح ###</label></div>
+        <div class="two"><label>رنگ پس‌زمینه عنوان<input type="color" data-front-key="toc_title_bg"></label><label>رنگ متن عنوان<input type="color" data-front-key="toc_title_color"></label></div>
+        <div class="two"><label>رنگ سطرها<input type="color" data-front-key="toc_text_color"></label><label>رنگ خطوط<input type="color" data-front-key="toc_rule_color"></label></div>
+        <h4 class="toc-subhead">رنگ پس‌زمینه شماره صفحه برای هر سطح</h4>
+        <div class="two">
+          <label>عنوان اصلی #<input type="color" data-front-key="toc_badge_h1_color"></label>
+          <label>عنوان فرعی ##<input type="color" data-front-key="toc_badge_h2_color"></label>
+          <label>عنوان فرعی ###<input type="color" data-front-key="toc_badge_h3_color"></label>
+          <label>پیشگفتار<input type="color" data-front-key="toc_badge_preface_color"></label>
+          <label>مقدمه<input type="color" data-front-key="toc_badge_intro_color"></label>
+        </div>
+        <div class="two"><label>اندازه متن<input type="number" min="8" max="30" data-front-key="toc_font_size"></label><label>اندازه عنوان<input type="number" min="8" max="30" data-front-key="toc_title_size"></label></div>
+        <div class="two"><label>ارتفاع هر ردیف (mm)<input type="number" min="7" max="30" data-front-key="toc_row_height_mm"></label><label>حاشیه کناری (mm)<input type="number" min="10" max="40" data-front-key="toc_side_margin_mm"></label></div>
+        <label>شروع فهرست از بالای صفحه (mm)<input type="number" min="32" max="70" data-front-key="toc_top_margin_mm"></label>
+      </details>
+    </div>
+    <div id="templateControls" class="project-tab-panel settings" role="tabpanel" aria-labelledby="settingsTab" hidden>
+    <h2>تنظیمات قالب</h2>
+    <p class="hint">رنگ‌ها، فونت‌ها، تیترها، شماره‌گذاری صفحات، پاورقی و کوتیشن از اینجا کنترل می‌شوند.</p>
+    <label>عنوان کتاب<input data-key="book_title"></label>
+    <label>نام نویسنده<input data-key="author"></label>
+    <div class="two"><label>سال انتشار<input data-key="publication_year"></label><label>نام ناشر<input data-key="publisher"></label></div>
+    <label>عنوان فرعی کتاب<input data-key="book_subtitle"></label>
+    <div class="two">
+      <label>اندازه فونت<input type="number" data-key="font_size" min="8" max="22" step="0.5"></label>
+      <label>فاصله خطوط<input type="number" data-key="line_height" min="1.1" max="2.6" step="0.1"></label>
+    </div>
+    <div class="two">
+      <label>فونت متن
+        <select data-key="font_family">
+          <option value="Vazirmatn">Vazirmatn</option>
+          <option value="IRNazanin">IR Nazanin</option>
+        </select>
+      </label>
+      <label>وزن متن اصلی
+        <select data-key="font_weight">
+          <option value="100">Thin — 100</option><option value="200">ExtraLight — 200</option><option value="300">Light — 300</option>
+          <option value="400">Regular — 400</option><option value="500">Medium — 500</option><option value="600">SemiBold — 600</option>
+          <option value="700">Bold — 700</option><option value="800">ExtraBold — 800</option><option value="900">Black — 900</option>
+        </select>
+      </label>
+    </div>
+    <div class="two">
+      <label>رنگ اصلی قالب<input type="color" data-key="navy"></label>
+      <label>رنگ تأکیدی قالب<input type="color" data-key="crimson"></label>
+    </div>
+
+    <details><summary>حاشیه‌های صفحه (میلی‌متر)</summary>
+      <div class="two"><label>بالا<input type="number" data-key="margin_top"></label><label>پایین<input type="number" data-key="margin_bottom"></label><label>داخل<input type="number" data-key="margin_inner"></label><label>بیرون (حداقل ۲۵)<input type="number" data-key="margin_outer" min="25"></label></div>
+    </details>
+
+    <details><summary>ابعاد صفحه (میلی‌متر)</summary>
+      <div class="two"><label>عرض<input type="number" data-key="page_width"></label><label>ارتفاع<input type="number" data-key="page_height"></label></div>
+    </details>
+
+    <details><summary>تنظیمات تیترهای داخلی (# و ## و ###)</summary>
+      <label>نوع تیتر<select id="headingLevel"><option value="h1">عنوان اصلی — #</option><option value="h2">زیرعنوان سطح ۱ — ##</option><option value="h3">زیرعنوان سطح ۲ — ###</option></select></label>
+      <div class="two"><label>رنگ پس‌زمینه<input type="color" id="headingBg"></label><label>رنگ نوشته<input type="color" id="headingColor"></label></div>
+      <div id="headingTriangleWrap"><label>رنگ مثلث عنوان #<input type="color" id="headingTriangleColor" value="#7d81a4"></label></div>
+      <div class="two"><label>اندازه فونت<input type="number" id="headingSize" min="8" max="28" step="0.5"></label><label>وزن فونت<select id="headingWeight"><option value="100">Thin — 100</option><option value="200">ExtraLight — 200</option><option value="300">Light — 300</option><option value="400">Regular — 400</option><option value="500">Medium — 500</option><option value="600">SemiBold — 600</option><option value="700">Bold — 700</option><option value="800">ExtraBold — 800</option><option value="900">Black — 900</option></select></label></div>
+    </details>
+
+    <details><summary>طراحی یکسان عنوان همه فصل‌ها</summary>
+      <label style="display:none">فصل<select id="chapterSelect"><option value="1">تمام فصل‌ها</option></select></label>
+      <div class="two"><label>رنگ پس‌زمینه عنوان فصل<input type="color" id="chapterBg"></label><label>اندازه عنوان فصل<input type="number" id="chapterSize" min="11" max="34"></label></div>
+      <label>وزن عنوان فصل<select id="chapterWeight"><option value="100">Thin — 100</option><option value="200">ExtraLight — 200</option><option value="300">Light — 300</option><option value="400">Regular — 400</option><option value="500">Medium — 500</option><option value="600">SemiBold — 600</option><option value="700">Bold — 700</option><option value="800">ExtraBold — 800</option><option value="900">Black — 900</option></select></label>
+    </details>
+
+    <details class="folio-settings"><summary>شماره‌گذاری صفحات و زبانه‌ها</summary>
+      <p class="folio-intro"><svg class="folio-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>موقعیت و ارتفاع هر زبانه را جداگانه تنظیم کن. جزئیات عرض، فونت و پدینگ در «تنظیمات پیشرفته» قرار دارند.</p>
+<section class="folio-card "><h4><svg class="folio-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>شماره‌گذاری و رنگ عمومی</h4><div class="two"><label>شماره شروع صفحات<input type="number" data-key="page_number_start" min="1" max="9999" step="1"></label><label>رنگ فرعی خطوط<input type="color" data-key="muted"></label></div></section>
+<section class="folio-card "><h4><svg class="folio-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M16 5v14M13 13h3"/></svg>صفحات فرد · پایین راست</h4><p class="folio-hint">ارتفاع مستطیل‌ها به سمت بالا افزایش می‌یابد</p><div class="two"><label>ارتفاع مستطیل 1 (mm)<input type="number" data-key="odd_tab_panel_1_height" min="10" max="125" step="0.5"></label><label>ارتفاع مستطیل 2 (mm)<input type="number" data-key="odd_tab_panel_2_height" min="10" max="125" step="0.5"></label></div><div class="two"><label>تراز طولی متن مستطیل 1<select data-key="odd_tab_panel_1_align"><option value="start">ابتدا (بالا)</option><option value="middle">وسط</option><option value="end">انتها (پایین)</option></select></label><label>تراز طولی متن مستطیل 2<select data-key="odd_tab_panel_2_align"><option value="start">ابتدا (بالا)</option><option value="middle">وسط</option><option value="end">انتها (پایین)</option></select></label></div><div class="two"><label>فاصله از راست (mm)<input type="number" data-key="odd_tab_margin_right" min="0" max="40" step="0.5"></label><label>فاصله از پایین (mm)<input type="number" data-key="odd_tab_margin_bottom" min="0" max="40" step="0.5"></label></div></section>
+<section class="folio-card "><h4><svg class="folio-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 5v14M8 13h3"/></svg>صفحات زوج · بالا چپ</h4><p class="folio-hint">ارتفاع مستطیل‌ها به سمت پایین افزایش می‌یابد</p><div class="two"><label>ارتفاع مستطیل 1 (mm)<input type="number" data-key="even_tab_panel_1_height" min="10" max="125" step="0.5"></label><label>ارتفاع مستطیل 2 (mm)<input type="number" data-key="even_tab_panel_2_height" min="10" max="125" step="0.5"></label></div><div class="two"><label>تراز طولی متن مستطیل 1<select data-key="even_tab_panel_1_align"><option value="start">ابتدا (بالا)</option><option value="middle">وسط</option><option value="end">انتها (پایین)</option></select></label><label>تراز طولی متن مستطیل 2<select data-key="even_tab_panel_2_align"><option value="start">ابتدا (بالا)</option><option value="middle">وسط</option><option value="end">انتها (پایین)</option></select></label></div><div class="two"><label>فاصله از چپ (mm)<input type="number" data-key="even_tab_margin_left" min="0" max="40" step="0.5"></label><label>فاصله از بالا (mm)<input type="number" data-key="even_tab_margin_top" min="0" max="40" step="0.5"></label></div></section>
+      <details class="folio-advanced"><summary><svg class="folio-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/><circle cx="9" cy="7" r="2" fill="white"/><circle cx="15" cy="12" r="2" fill="white"/><circle cx="11" cy="17" r="2" fill="white"/></svg>تنظیمات پیشرفته · عرض، فونت، پدینگ و موقعیت</summary>
+        <p class="folio-hint">دو مستطیل همیشه مجاور هستند و عرض کادر شماره برابر مجموع عرض آن‌هاست. پدینگ‌های چپ و راست فضای متن را محدود می‌کنند، اما نوشته در عرض کادر خودش وسط قرار می‌گیرد.</p>
+<details class="folio-subgroup"><summary><svg class="folio-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 12h8m-3-3 3 3-3 3"/></svg>عرض چهار مستطیل</summary><div class="two"><label>عرض مستطیل 1 فرد (mm)<input type="number" data-key="odd_tab_panel_1_width" min="2.5" max="18" step="0.1"></label><label>عرض مستطیل 2 فرد (mm)<input type="number" data-key="odd_tab_panel_2_width" min="2.5" max="18" step="0.1"></label><label>عرض مستطیل 1 زوج (mm)<input type="number" data-key="even_tab_panel_1_width" min="2.5" max="18" step="0.1"></label><label>عرض مستطیل 2 زوج (mm)<input type="number" data-key="even_tab_panel_2_width" min="2.5" max="18" step="0.1"></label></div></details>
+<details class="folio-subgroup"><summary><svg class="folio-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6V4h16v2M12 4v16m-4 0h8"/></svg>اندازه نوشته‌ها و رنگ شماره</summary><div class="two"><label>فونت مستطیل 1 فرد (pt)<input type="number" data-key="odd_tab_panel_1_font_size" min="4" max="18" step="0.2"></label><label>فونت مستطیل 2 فرد (pt)<input type="number" data-key="odd_tab_panel_2_font_size" min="4" max="18" step="0.2"></label><label>فونت مستطیل 1 زوج (pt)<input type="number" data-key="even_tab_panel_1_font_size" min="4" max="18" step="0.2"></label><label>فونت مستطیل 2 زوج (pt)<input type="number" data-key="even_tab_panel_2_font_size" min="4" max="18" step="0.2"></label><label>اندازه شماره صفحه فرد (pt)<input type="number" data-key="odd_tab_number_font_size" min="5" max="22" step="0.2"></label><label>اندازه شماره صفحه زوج (pt)<input type="number" data-key="even_tab_number_font_size" min="5" max="22" step="0.2"></label><label>زمینه کادر شماره<input type="color" data-key="tab_number_bg_color"></label><label>رنگ متن شماره<input type="color" data-key="tab_number_text_color"></label></div></details>
+<details class="folio-subgroup"><summary><svg class="folio-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><rect x="8" y="8" width="8" height="8" rx="1" stroke-dasharray="2 2"/></svg>پدینگ فرد · مستطیل 1</summary><div class="two"><label>بالا (mm)<input type="number" data-key="odd_tab_panel_1_pad_top" min="0" max="8" step="0.1"></label><label>پایین (mm)<input type="number" data-key="odd_tab_panel_1_pad_bottom" min="0" max="8" step="0.1"></label><label>چپ (mm)<input type="number" data-key="odd_tab_panel_1_pad_left" min="0" max="8" step="0.1"></label><label>راست (mm)<input type="number" data-key="odd_tab_panel_1_pad_right" min="0" max="8" step="0.1"></label></div></details>
+<details class="folio-subgroup"><summary><svg class="folio-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><rect x="8" y="8" width="8" height="8" rx="1" stroke-dasharray="2 2"/></svg>پدینگ فرد · مستطیل 2</summary><div class="two"><label>بالا (mm)<input type="number" data-key="odd_tab_panel_2_pad_top" min="0" max="8" step="0.1"></label><label>پایین (mm)<input type="number" data-key="odd_tab_panel_2_pad_bottom" min="0" max="8" step="0.1"></label><label>چپ (mm)<input type="number" data-key="odd_tab_panel_2_pad_left" min="0" max="8" step="0.1"></label><label>راست (mm)<input type="number" data-key="odd_tab_panel_2_pad_right" min="0" max="8" step="0.1"></label></div></details>
+<details class="folio-subgroup"><summary><svg class="folio-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><rect x="8" y="8" width="8" height="8" rx="1" stroke-dasharray="2 2"/></svg>پدینگ زوج · مستطیل 1</summary><div class="two"><label>بالا (mm)<input type="number" data-key="even_tab_panel_1_pad_top" min="0" max="8" step="0.1"></label><label>پایین (mm)<input type="number" data-key="even_tab_panel_1_pad_bottom" min="0" max="8" step="0.1"></label><label>چپ (mm)<input type="number" data-key="even_tab_panel_1_pad_left" min="0" max="8" step="0.1"></label><label>راست (mm)<input type="number" data-key="even_tab_panel_1_pad_right" min="0" max="8" step="0.1"></label></div></details>
+<details class="folio-subgroup"><summary><svg class="folio-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><rect x="8" y="8" width="8" height="8" rx="1" stroke-dasharray="2 2"/></svg>پدینگ زوج · مستطیل 2</summary><div class="two"><label>بالا (mm)<input type="number" data-key="even_tab_panel_2_pad_top" min="0" max="8" step="0.1"></label><label>پایین (mm)<input type="number" data-key="even_tab_panel_2_pad_bottom" min="0" max="8" step="0.1"></label><label>چپ (mm)<input type="number" data-key="even_tab_panel_2_pad_left" min="0" max="8" step="0.1"></label><label>راست (mm)<input type="number" data-key="even_tab_panel_2_pad_right" min="0" max="8" step="0.1"></label></div></details>
+<details class="folio-subgroup"><summary><svg class="folio-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20M2 12h20M9 5l3-3 3 3M9 19l3 3 3-3M5 9l-3 3 3 3m14-6 3 3-3 3"/></svg>ریزتنظیم موقعیت (آفست)</summary><div class="two"><label>افقی فرد (mm)<input type="number" data-key="odd_tab_offset_x" min="-12" max="12" step="0.5"></label><label>عمودی فرد (mm)<input type="number" data-key="odd_tab_offset_y" min="-12" max="12" step="0.5"></label><label>افقی زوج (mm)<input type="number" data-key="even_tab_offset_x" min="-12" max="12" step="0.5"></label><label>عمودی زوج (mm)<input type="number" data-key="even_tab_offset_y" min="-12" max="12" step="0.5"></label></div></details>
+      </details>
+      <p class="folio-hint">دو متن مستطیل‌های فرد و زوج در «فصل‌ها و بخش‌ها» برای هر فصل جداگانه تنظیم می‌شوند.</p>
+    </details>
+
+    <details><summary>پاورقی</summary>
+      <div class="two"><label>رنگ خط پاورقی<input type="color" data-key="footnote_line_color"></label><label>رنگ متن پاورقی<input type="color" data-key="footnote_color"></label></div>
+      <label>اندازه فونت پاورقی<input type="number" data-key="footnote_font_size" min="7" max="14" step="0.5"></label>
+      <p class="hint">در Markdown از ساختار استاندارد <code>[^1]</code> و <code>[^1]: متن پاورقی</code> استفاده کن.</p>
+    </details>
+
+    <details><summary>کوتیشن</summary>
+      <div class="two"><label>جای پیش‌فرض کوتیشن<select data-key="quote_position"><option value="top-right">بالا سمت راست</option><option value="bottom-left">پایین سمت چپ</option></select></label><label>رنگ نماد کوتیشن<input type="color" data-key="quote_symbol_bg"></label></div>
+      <div class="two"><label>اندازه فونت کوتیشن<input type="number" data-key="quote_font_size" min="10" max="40" step="0.5"></label><label>رنگ متن کوتیشن<input type="color" data-key="quote_color"></label></div>
+      <div class="two"><label>اندازه فونت بخش جانبی<input type="number" data-key="quote_meta_font_size" min="8" max="18" step="0.5"></label><label>رنگ متن بخش جانبی<input type="color" data-key="quote_meta_color"></label></div>
+      <div class="two"><label>حاشیه بالا<input type="number" data-key="quote_margin_top" min="0" max="60"></label><label>حاشیه راست<input type="number" data-key="quote_margin_right" min="0" max="60"></label><label>حاشیه پایین<input type="number" data-key="quote_margin_bottom" min="0" max="60"></label><label>حاشیه چپ<input type="number" data-key="quote_margin_left" min="0" max="60"></label></div>
+      <p class="hint">برای کوتیشن از بلوک <code>:::quote</code> استفاده کن. اگر آخرین خط با <code>--</code> شروع شود، به عنوان متن جانبی نمایش داده می‌شود.</p>
+    </details>
+
+    <hr>
+    <p class="hint">در Markdown، <code>&lt;!-- PAGEBREAK --&gt;</code> صفحه جدید و <code>&lt;!-- CHAPTER --&gt;</code> شروع فصل را مشخص می‌کند.</p>
+    </div>
+  </aside>
+
+  <section class="editor">
+    <div class="section-head">
+      <h2 id="editingSectionName">متن بخش (Markdown)</h2>
+      <div>
+        <label class="mini secondary importlabel">ورود فایل .md<input type="file" id="mdFile" accept=".md,text/markdown,text/plain" hidden></label>
+      </div>
+    </div>
+    <nav class="md-outline" id="mdOutline" aria-label="پیمایش فصل‌ها و تیترهای کتاب"><span class="outline-empty">برای پیمایش سریع، عنوان فصل‌ها و تیترها اینجا نمایش داده می‌شوند.</span></nav>
+    <div class="markdown-wrap"><pre id="mdHighlight"></pre><textarea id="markdown" spellcheck="false" placeholder="متن Markdown کتاب را بنویسید..."></textarea></div>
+    <div class="footer-note">نمونه تصویر: <code>![توضیح](images/photo.png){width=75%}</code> &nbsp;|&nbsp; کپشن جدول: <code>جدول: عنوان جدول</code></div>
+    <div class="footer-note">نمونه کوتیشن: <code>:::quote position=top-right</code> ... <code>:::</code> &nbsp;|&nbsp; نمونه پاورقی: <code>متن[^1]</code> و <code>[^1]: پاورقی</code> &nbsp;|&nbsp; صفحه خالی ویژه: <code>&lt;!-- BLANKPAGE --&gt;</code></div>
+  </section>
+
+  <section class="preview">
+    <div class="section-head"><h2>پیش‌نمایش PDF</h2><span id="pageCount">—</span></div>
+    <div class="page-frame"><img id="pageImage" alt="پیش‌نمایش صفحه"><div class="empty" id="empty">برای نمایش صفحات، دکمه «پیش‌نمایش» را بزنید.</div></div>
+    <div class="pager"><button class="secondary" id="prevBtn" type="button">صفحه قبل</button><input id="pageNo" type="number" min="1" value="1"><span id="pageTotal">/ ۰</span><button class="secondary" id="nextBtn" type="button">صفحه بعد</button></div>
+    <div class="thumbs" id="thumbs"></div>
+  </section>
+</main>
+
+<dialog id="imageDialog" class="image-dialog" aria-labelledby="imageDialogTitle">
+  <form id="imageForm" class="image-form">
+    <div class="image-dialog-head"><div><h2 id="imageDialogTitle">افزودن تصویر</h2><p class="hint">تصویر در محل نشانگر Markdown درج می‌شود.</p></div><button type="button" id="imageCancel" class="secondary">انصراف ×</button></div>
+    <label class="image-field">انتخاب فایل تصویر<input id="imageFile" type="file" accept="image/png,image/jpeg,image/webp" required></label>
+    <label class="image-field">عنوان تصویر (کپشن)<input id="imageCaption" type="text" placeholder="مثلاً نمای کلی سیستم"></label>
+    <label class="image-field">عرض تصویر: درصد از عرض متن<input id="imageWidth" type="number" min="5" max="100" step="1" value="75" required></label>
+    <p class="hint">شماره شکل به‌صورت خودکار در خروجی کتاب افزوده می‌شود.</p>
+    <p id="imageError" class="image-error" role="status" aria-live="polite"></p>
+    <div class="image-dialog-actions"><button id="imageSubmit" type="submit" class="primary">افزودن در محل نشانگر</button><button id="imageCloseSecondary" type="button" class="secondary" onclick="document.getElementById('imageDialog').close()">بستن</button></div>
+  </form>
+</dialog>
+
+<dialog id="promptDialog" class="prompt-dialog" aria-labelledby="promptTitle">
+  <div class="prompt-head"><h2 id="promptTitle">پرامپت آماده‌سازی Markdown برای Book Studio Lite</h2><button id="closePrompt" type="button" class="secondary">بستن ×</button></div>
+  <p class="hint">این متن را کپی کن و همراه فایل Word یا متن خام به ابزار تبدیل محتوا بده.</p>
+  <textarea id="promptText" readonly dir="rtl" spellcheck="false"></textarea>
+  <div class="prompt-actions"><span id="promptStatus"></span><button id="copyPrompt" type="button">کپی کامل پرامپت</button></div>
+</dialog>
+
+<script src="/static/ui_icons.js" defer></script>
+<script type="module" src="/static/app.js"></script>
+</body>
+</html>

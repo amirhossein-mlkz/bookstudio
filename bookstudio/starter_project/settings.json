@@ -1,0 +1,75 @@
+{
+  "book_title": "بازاریابی صنعتی مقدماتی",
+  "author": "علی توکلی (نمونه)",
+  "publication_year": "۱۴۰۵",
+  "publisher": "نام انتشارات (نمونه)",
+  "book_subtitle": "علمی و عملیاتی",
+  "navy": "#1f2656",
+  "crimson": "#cf2833",
+  "muted": "#7d81a4",
+  "font_family": "Vazirmatn",
+  "font_size": 12.0,
+  "font_weight": 400,
+  "line_height": 1.8,
+  "margin_top": 18.0,
+  "margin_bottom": 20.0,
+  "margin_inner": 21.0,
+  "margin_outer": 25,
+  "page_width": 165.0,
+  "page_height": 235.0,
+  "page_number_start": 1,
+  "odd_tab_margin_right": 8.0,
+  "odd_tab_margin_bottom": 14.0,
+  "even_tab_margin_left": 8.0,
+  "even_tab_margin_top": 14.0,
+  "odd_tab_offset_x": 0.0,
+  "odd_tab_offset_y": 0.0,
+  "even_tab_offset_x": 0.0,
+  "even_tab_offset_y": 0.0,
+  "odd_tab_text_padding": 0.8,
+  "odd_tab_panel_1_height": 24.92,
+  "odd_tab_panel_2_height": 18.25,
+  "odd_tab_text_1": "بازاریابی صنعتی مقدماتی",
+  "odd_tab_text_2": "علمی و عملیاتی",
+  "chapter_styles": {
+    "1": {
+      "background": "#1f2656",
+      "font_size": 19,
+      "font_weight": 700
+    }
+  },
+  "heading_styles": {
+    "h2": {
+      "font_size": 13,
+      "font_weight": 700,
+      "background": "#575A84",
+      "color": "#ffffff"
+    },
+    "h3": {
+      "font_size": 12,
+      "font_weight": 700,
+      "background": "#D1D1E0",
+      "color": "#575A84"
+    },
+    "h1": {
+      "font_size": 13,
+      "font_weight": 700,
+      "background": "#1f2656",
+      "color": "#ffffff",
+      "triangle_color": "#7d81a4"
+    }
+  },
+  "footnote_line_color": "#9a9a9a",
+  "footnote_font_size": 9.0,
+  "footnote_color": "#808080",
+  "quote_symbol_bg": "#b9b9b9",
+  "quote_font_size": 16.0,
+  "quote_color": "#222222",
+  "quote_meta_font_size": 9.0,
+  "quote_meta_color": "#969696",
+  "quote_position": "top-right",
+  "quote_margin_top": 3.0,
+  "quote_margin_right": 1.0,
+  "quote_margin_bottom": 3.0,
+  "quote_margin_left": 1.0
+}
